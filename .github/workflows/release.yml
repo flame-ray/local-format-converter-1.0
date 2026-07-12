@@ -1,0 +1,35 @@
+name: 构建并发布 Windows 版
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 安装打包依赖
+        run: pip install pyinstaller pillow
+      - name: 安装 FFmpeg
+        run: choco install ffmpeg -y --no-progress
+      - name: 生成图标并打包
+        shell: pwsh
+        run: |
+          python make_icon.py
+          $ffmpeg = (Get-Command ffmpeg.exe).Source
+          pyinstaller --noconfirm --clean --onefile --windowed --name 'local-format-converter-1.0' --icon 'assets\format-converter.ico' --add-binary "$ffmpeg;." app.py
+          Copy-Item '.\dist\local-format-converter-1.0.exe' '.\local-format-converter-1.0.exe'
+      - name: 发布 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0
+          name: 本地格式转换助手 1.0
+          files: local-format-converter-1.0.exe
+          generate_release_notes: true
+          overwrite_files: true
