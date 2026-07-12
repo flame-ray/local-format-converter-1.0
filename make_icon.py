@@ -1,7 +1,10 @@
+from pathlib import Path
+
 from PIL import Image, ImageDraw
 
 
 sizes = [16, 24, 32, 48, 64, 128, 256]
+Path("assets").mkdir(parents=True, exist_ok=True)
 images = []
 for size in sizes:
     img = Image.new("RGBA", (size, size), "#102A43")
