@@ -22,7 +22,8 @@ jobs:
         shell: pwsh
         run: |
           python make_icon.py
-          $ffmpeg = (Get-Command ffmpeg.exe).Source
+          $ffmpeg = Get-ChildItem 'C:\ProgramData\chocolatey\lib' -Recurse -Filter ffmpeg.exe | Where-Object { $_.Length -gt 10MB } | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $ffmpeg) { throw '未找到可打包的 FFmpeg 主程序' }
           pyinstaller --noconfirm --clean --onefile --windowed --name 'local-format-converter-1.0' --icon 'assets\format-converter.ico' --add-binary "$ffmpeg;." app.py
           Copy-Item '.\dist\local-format-converter-1.0.exe' '.\local-format-converter-1.0.exe'
       - name: 发布 Release
